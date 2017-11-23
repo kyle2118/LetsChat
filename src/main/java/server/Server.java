@@ -1,20 +1,15 @@
 package server;
 
-import Client.Client;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import res.Const;
 
 public class Server {
 
-    private static int usersNum = 0;
+    private static volatile int usersNum = 0;
 
     private List<Connection> clients = Collections.synchronizedList(new ArrayList<>());
     private ServerSocket serverSocket;
@@ -26,7 +21,8 @@ public class Server {
         new Server();
     }
 
-    public Server() {
+    private Server() {
+        Scanner scanner = new Scanner(System.in);
         try {
             serverSocket = new ServerSocket(Const.PORT);
             while (true) {
@@ -47,9 +43,8 @@ public class Server {
             serverSocket.close();
 
             synchronized (clients) {
-                Iterator iterator = clients.iterator();
-                while (iterator.hasNext()) {
-                    ((Connection)iterator.next()).close();
+                for (Connection client : clients) {
+                    client.close();
                 }
             }
 
@@ -64,7 +59,7 @@ public class Server {
 
         private String name = "";
 
-        public Connection(Socket socket) {
+        private Connection(Socket socket) {
             this.socket = socket;
             try {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -79,16 +74,19 @@ public class Server {
             try {
                 name = in.readLine();
                 sendAllClients(name + " is online.");
-                String text = "";
+                System.out.println(name + " is online.");
+                String text;
                 while (true) {
                     text = in.readLine();
-                    if (!text.equals("exit"))
+                    if (text.equals("exit"))
                         break;
 
                     sendAllClients(name + ": " + text);
+                    System.out.println(name + ": " + text);
                 }
 
                 sendAllClients(name + " is offline.");
+                System.out.println(name + " is offline.");
 
 
             } catch (IOException e) {
@@ -99,12 +97,13 @@ public class Server {
         }
 
         private synchronized void sendAllClients(String message) {
-            Iterator<Connection> it = clients.iterator();
-            while (it.hasNext()) {
-                it.next().out.println(name + ": " + message);
+            for (Connection current : clients) {
+                if (current.equals(Thread.currentThread()))
+                    continue;
+                current.out.println(message);
             }
         }
-        public void close() {
+        private void close() {
             try {
                 in.close();
                 out.close();
@@ -112,6 +111,7 @@ public class Server {
 
                 // Delete current object from the list of online users
                 clients.remove(this);
+                usersNum--;
                 if (clients.isEmpty()) {
                     Server.this.closeAll();
                     System.exit(0);
