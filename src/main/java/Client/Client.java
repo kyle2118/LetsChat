@@ -1,9 +1,11 @@
 package Client;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.Scanner;
+
+import res.Const;
 
 public class Client {
     private String name;
@@ -11,50 +13,60 @@ public class Client {
     private LocalDateTime connectedTime;
     private LocalDateTime disconnectTime;
 
-    private static int serverPort;
-    private static String address;
-    static {
-        serverPort = 6666;     // Port server set on
-        address = "127.0.0.1";  // Localhost ip address
+    private static BufferedReader in;
+    private static PrintWriter out;
+
+    private Socket socket;
+
+    /*
+        Enter Point for Client
+     */
+    public static void main(String[] args) {
+        new Client();
     }
 
     public Client() {
-
-    }
-
-    public static void main(String[] args) {
-        Client client = new Client();
+        Scanner scanner = new Scanner(System.in);
         try {
-            InetAddress ipAddress = InetAddress.getByName(address); // Object representing our ip
-            Socket serverSocket = new Socket(ipAddress, serverPort);  // Creating a socket using ip and server port
-
-            BufferedReader serverSays = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
-            PrintWriter output = new PrintWriter(serverSocket.getOutputStream(), true);
-            BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
+            socket = new Socket(Const.ADDRESS, Const.PORT);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
 
             System.out.println("Your name: ");
-            client.setName(keyboard.readLine());
-            String text;
+            name = scanner.nextLine();
+            out.println(name);
 
-            while ((text = keyboard.readLine()) != null) {
-                if (text.equalsIgnoreCase("exit"))
-                    break;
-                output.println(client.name + ": " + text);
-//                writer.flush();
-                text = serverSays.readLine();
-                System.out.println(text);
+            Receiver receiver = new Receiver();
+            receiver.start();
+
+            String text = "";
+            while (!text.equals("exit")) {
+                text = scanner.nextLine();
+                out.println(text);
             }
-            keyboard.close();
-            output.close();
-            serverSays.close();
-            serverSocket.close();
-        } catch (Exception e) {
+            receiver.setStop();
+
+
+        } catch (IOException e) {
+            System.err.println("Unable to create a Socket using ip address:" + Const.ADDRESS + " and port: " + Const.PORT);
+        } finally {
+            close();
+        }
+
+    }
+    public void close() {
+        try {
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-        public String getName() {
-            return name;
-        }
+
+    public String getName() {
+        return name;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -62,9 +74,43 @@ public class Client {
 
     public LocalDateTime getConnectedTime() {
             return connectedTime;
+    }
+
+    public LocalDateTime getDisconnectTime() {
+        return disconnectTime;
+    }
+
+    /**
+     *  Thread printing everything that server sends.
+     *  Does not participate in logic of typing a message.
+     *  Thread resolves a problem when each side of chat must
+     *  hit the 'enter' to receive data sent.
+     */
+    private class Receiver extends Thread {
+
+        private boolean stopped = false;
+        /*
+            Stops receiving messages
+         */
+        public void setStop() {
+            this.stopped = true;
         }
 
-        public LocalDateTime getDisconnectTime() {
-            return disconnectTime;
+        /**
+         * Sets time of online.
+         * Prints everything from server to console.
+         */
+        @Override
+        public void run() {
+            connectedTime = LocalDateTime.now();
+            try {
+                while (!stopped) {
+                    String text = in.readLine();
+                    System.out.println(text);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+    }
 }
