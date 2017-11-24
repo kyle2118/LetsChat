@@ -1,4 +1,4 @@
-package Client;
+package Console.Client.client;
 
 import java.io.*;
 import java.net.Socket;
@@ -19,7 +19,7 @@ public class Client {
     private Socket socket;
 
     /*
-        Enter Point for Client
+        Enter Point for Console.Client
      */
     public static void main(String[] args) {
         new Client();
@@ -81,7 +81,7 @@ public class Client {
     }
 
     /**
-     *  Thread printing everything that server sends.
+     *  Thread printing everything that Console.Client.client sends.
      *  Does not participate in logic of typing a message.
      *  Thread resolves a problem when each side of chat must
      *  hit the 'enter' to receive data sent.
@@ -98,7 +98,7 @@ public class Client {
 
         /**
          * Sets time of online.
-         * Prints everything from server to console.
+         * Prints everything from Console.Client.client to console.
          */
         @Override
         public void run() {
