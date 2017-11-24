@@ -6,8 +6,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 
 public class ControllerClient {
+    private static int labelX, labelY;
+    private String name;
+    private Color color;
+
     private static int xStart, yStart;
     @FXML
     private Button buttonSend;
@@ -20,20 +25,20 @@ public class ControllerClient {
 
     @FXML
     public void send() {
-        buttonSend.setText("Changed");
-        System.out.println(input.getText() == null);
-        System.out.println(msg.getText() == null);
-//        String text = input.getText();
-//        if (text == null) {
-//            return;
-//        }
-//        Label message = new Label(text);
-//
-//        message.setPrefSize(100, 30);
-//        message.setScaleX(xStart);
-//        message.setScaleY(yStart);
+
+        String text = input.getText();
+        if (text == null) {
+            System.out.println("text from input == null");
+            return;
+        }
+        Label message = new Label(text);
+        System.out.println(message.getText());
+        message.setPrefSize(100, 30);
 //        yStart += 50;
-//        historyField.getChildren().add(message);
+        message.setLayoutX(msg.getLayoutX());
+        message.setLayoutY(msg.getLayoutY() + 60);
+        historyField.getChildren().add(message);
+
 
     }
 
