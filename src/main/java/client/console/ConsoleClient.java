@@ -10,39 +10,39 @@ import message.Message;
 import res.Const;
 
 public class ConsoleClient extends ClientBase {
-    private Scanner scanner = null;
     public static void main(String[] args) {
         new ConsoleClient();
     }
 
     public ConsoleClient() {
-        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Your name: ");
-        setName(scanner.nextLine());
-        try {
-            out2.writeObject(new Message(name, "online", LocalTime.now(), 1234));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /**
+         *  Start an inner class which will work independently receiving messages from another participants
+         *  A participant does not receive messages until he/she inputs name
+         */
 
         Receiver receiver = new Receiver();
         receiver.start();
 
+        /**
+         * Loop works until a participant would like to finish the conversation
+         */
         String text = "";
-        while (!text.equals("exit")) {
-            text = scanner.nextLine();
-            LocalTime sentTime = LocalTime.now();
-            Message newMessage = new Message(super.name, text, sentTime, super.socket.getPort());
+        while (!text.equals("exit") || !socket.isClosed()) {
+            text = keyboard.nextLine();
+            if (text.equals("")) {
+                continue;
+            }
+            Message newMessage = new Message(super.name, text, LocalTime.now(), super.socket.getPort());
 
             try {
                 out2.writeObject(newMessage);
-                System.out.println("Object sent via serializable message");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         receiver.setStop();
+        close();
     }
 
     /**

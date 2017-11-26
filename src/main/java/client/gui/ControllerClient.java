@@ -76,13 +76,13 @@ public class ControllerClient {
     }
     @FXML
     public void destroy() {
-        try {
-            in.close();
-            out.close();
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            in.close();
+//            out.close();
+//            socket.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private class Receiver extends Thread {
