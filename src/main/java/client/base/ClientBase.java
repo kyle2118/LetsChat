@@ -38,9 +38,9 @@ public class ClientBase {
     }
     protected void close() {
         try {
-            socket.close();
             in2.close();
             out2.close();
+            socket.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
