@@ -1,14 +1,12 @@
 package client.console;
 
 import java.io.*;
-import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalTime;
-import java.util.Scanner;
 
 import client.base.ClientBase;
 import message.Message;
-import res.Const;
+import message.MessageType;
 
 public class ConsoleClient extends ClientBase {
     public static void main(String[] args) throws  InterruptedException {
@@ -31,19 +29,31 @@ public class ConsoleClient extends ClientBase {
         String text;
         while (!socket.isClosed()) {
             text = keyboard.nextLine();
+            /*
+                Message will not be sent until the string is not empty
+             */
+            if (text.equals("")) {
+                continue;
+            }
+            /*
+                In case of someone leaves the chat,
+                all the rest clients receive a message
+                with type OFFLINE with text "exit"
+                which will not be printed
+             */
             if (text.equals("exit")) {
                 try {
-                    out2.writeObject(new Message(super.name, "exit", LocalTime.now(), super.socket.getPort()));
+                    out2.writeObject(new Message(MessageType.OFFLINE, super.name, "exit", LocalTime.now(), super.socket.getPort()));
                     receiver.setStop();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             }
-            if (text.equals("")) {
-                continue;
-            }
-            Message newMessage = new Message(super.name, text, LocalTime.now(), super.socket.getPort());
+            /*
+                Ordinary messages is sent with type MESSAGE
+             */
+            Message newMessage = new Message(MessageType.MESSAGE, super.name, text, LocalTime.now(), super.socket.getPort());
 
             try {
                 out2.writeObject(newMessage);
@@ -63,6 +73,7 @@ public class ConsoleClient extends ClientBase {
     private class Receiver extends Thread {
 
         private boolean stopped = false;
+
         /*
             Stops receiving messages
          */
@@ -79,14 +90,24 @@ public class ConsoleClient extends ClientBase {
             Message msg;
             try {
                 while (!stopped) {
+//                    if (name == null) {
+//                        continue;
+//                    }
                     msg = (Message)in2.readObject();
-                    if (msg.getName().equals("Server")) {
+                    /*
+                        In the case of message type is SERVER_MESSAGE, print it with just text
+                     */
+                    if (msg.getType() == MessageType.SERVER_MESSAGE) {
                         System.out.println(msg.getSentTime() + " " + msg.getText());
                         continue;
                     }
-                    System.out.println(msg.getSentTime()+ " " + msg.getName() + ": " + msg.getText());
+                    System.out.println(msg.getSentTime()+ " " + msg.getSenderName() + ": " + msg.getText());
+
                 }
             } catch (SocketException e) {
+                /*
+                 *  If a SocketException has been caught, countdown from 3 to 1
+                 */
                 System.out.println("Good bye!");
                 for (int i = 3; i >= 1; i--) {
                     System.out.print(i);

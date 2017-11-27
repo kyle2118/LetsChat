@@ -1,25 +1,42 @@
 package message;
 
+import client.base.ClientType;
+
 import java.io.Serializable;
 import java.time.LocalTime;
 
 public class Message implements Serializable {
     private byte version = 1;
-    private String name;
+    private MessageType type;
+    private String senderName;
     private String text;
     private LocalTime sentTime;
     private int port;
-    public Message(String name, String text, LocalTime sentTime, int ip) {
-        this.name = name;
+    /*
+        Constructors
+     */
+    public Message(MessageType type, String name, String text, LocalTime sentTime, int port) {
+        this.type = type;
+        this.senderName = name;
         this.text = text;
         this.sentTime = sentTime;
-        this.port = ip;
+        this.port = port;
+    }
+    public Message(ClientType type) {
+
     }
     public Message(Message message) {
-        this(message.name, message.text, message.sentTime, message.port);
+        this(message.type, message.senderName, message.text, message.sentTime, message.port);
     }
-    public String getName() {
-        return name;
+    /*
+        Methods. Setters & Getters
+     */
+    public MessageType getType() {
+        return type;
+    }
+
+    public String getSenderName() {
+        return senderName;
     }
     public String getText() {
         return text;
