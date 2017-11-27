@@ -15,6 +15,9 @@ public class Message implements Serializable {
         this.sentTime = sentTime;
         this.port = ip;
     }
+    public Message(Message message) {
+        this(message.name, message.text, message.sentTime, message.port);
+    }
     public String getName() {
         return name;
     }

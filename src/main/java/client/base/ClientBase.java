@@ -11,8 +11,8 @@ import java.util.Scanner;
 
 public class ClientBase {
     protected String name;
-    private LocalDateTime connectTime;
-    private LocalDateTime disconnectTime;
+    protected LocalDateTime connectTime;
+    protected LocalDateTime disconnectTime;
 
     protected Socket socket;
     protected ObjectOutputStream out2;
@@ -25,8 +25,9 @@ public class ClientBase {
             socket = new Socket(Const.ADDRESS, Const.PORT);
             out2 = new ObjectOutputStream(socket.getOutputStream());
             in2 = new ObjectInputStream(socket.getInputStream());
-
             keyboard = new Scanner(System.in);
+
+            connectTime = LocalDateTime.now();
 
             System.out.println("Your name: ");
             setName(keyboard.nextLine());
@@ -38,6 +39,7 @@ public class ClientBase {
     }
     protected void close() {
         try {
+            disconnectTime = LocalDateTime.now();
             in2.close();
             out2.close();
             socket.close();
