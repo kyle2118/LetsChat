@@ -25,9 +25,12 @@ public class ClientBase {
             socket = new Socket(Const.ADDRESS, Const.PORT);
             out2 = new ObjectOutputStream(socket.getOutputStream());
             in2 = new ObjectInputStream(socket.getInputStream());
-            keyboard = new Scanner(System.in);
 
-            out2.writeObject(ClientType.CONSOLE);
+
+            /// TODO ClientBase shouldn't sent client type, since in the future GUI client will send another type
+            /// TODO Enter name not here, GUI client does not have console window!!!.
+            keyboard = new Scanner(System.in);
+            out2.writeObject(type);
             System.out.println("Your name: ");
             setName(keyboard.nextLine());
             out2.writeObject(new Message(MessageType.ONLINE, name, "online", LocalTime.now(), 1234));

@@ -5,10 +5,12 @@ import java.net.SocketException;
 import java.time.LocalTime;
 
 import client.base.ClientBase;
+import client.base.ClientType;
 import message.Message;
 import message.MessageType;
 
 public class ConsoleClient extends ClientBase {
+    public final ClientType type = ClientType.CONSOLE;
     public static void main(String[] args) throws  InterruptedException {
         new ConsoleClient();
     }
