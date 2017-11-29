@@ -16,28 +16,18 @@ public class ClientBase {
     protected ObjectOutputStream out2;
     protected ObjectInputStream in2;
 
-    public static final ClientType type = ClientType.CONSOLE;
-
     protected Scanner keyboard;
 
     protected ClientBase() {
-        try {
-            socket = new Socket(Const.ADDRESS, Const.PORT);
-            out2 = new ObjectOutputStream(socket.getOutputStream());
-            in2 = new ObjectInputStream(socket.getInputStream());
-
-
-            /// TODO ClientBase shouldn't sent client type, since in the future GUI client will send another type
-            /// TODO Enter name not here, GUI client does not have console window!!!.
-            keyboard = new Scanner(System.in);
-            out2.writeObject(type);
-            System.out.println("Your name: ");
-            setName(keyboard.nextLine());
-            out2.writeObject(new Message(MessageType.ONLINE, name, "online", LocalTime.now(), 1234));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//
+//
+//            /// TODO ClientBase shouldn't sent client type, since in the future GUI client will send another type
+//            /// TODO Enter name not here, GUI client does not have console window!!!.
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
     protected void close() {
         try {

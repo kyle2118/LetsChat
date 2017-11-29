@@ -22,9 +22,6 @@ public class Message implements Serializable {
         this.sentTime = sentTime;
         this.port = port;
     }
-    public Message(ClientType type) {
-
-    }
     public Message(Message message) {
         this(message.type, message.senderName, message.text, message.sentTime, message.port);
     }

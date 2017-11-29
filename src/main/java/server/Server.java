@@ -17,11 +17,12 @@ public class Server {
     private static volatile int usersNum = 0;
 
     private List<Connection> clients = Collections.synchronizedList(new ArrayList<>());
+    // History of last n messages, currently n = 10
     private LinkedList<Message> messageHistory = new LinkedList<>();
     private ServerSocket serverSocket;
 
     /*
-        Enter point for Console.ConsoleClient.client class
+        Enter point for server.Server() class
      */
     public static void main(String[] args) {
 
@@ -29,11 +30,22 @@ public class Server {
     }
 
     private Server() {
+        //Creates a commander which allows server to give commands
         Commander commander = new Commander();
         commander.start();
         try {
             serverSocket = new ServerSocket(Const.PORT);
-            while (!serverSocket.isClosed() && commander.isAlive()) {
+            // Server accepts new connections until commander thread is alive or socket is open
+            while (!serverSocket.isClosed()) {
+                /*
+                    Connection is a User bean. But complicated with socket, output(input) streams and it's a thread
+                    In case of a new connection, ex. new user connects to server
+                    it is added to the list of connection and that connection thread starts
+                 */
+                if (!commander.isAlive()) {
+                    closeAll();
+                    System.exit(0);
+                }
                 Socket socket = serverSocket.accept();
                 usersNum++;
                 Connection connection = new Connection(socket);
@@ -91,12 +103,11 @@ public class Server {
                     }
                 }
             } while (!command.equals("shutdown"));
+
         }
     }
     private class Connection extends Thread {
-        private BufferedReader in;
         private ObjectInputStream in2;
-        private PrintWriter out;
         private ObjectOutputStream out2;
         private Socket socket;
 
@@ -114,7 +125,9 @@ public class Server {
                 out2 = new ObjectOutputStream(socket.getOutputStream());
                 connectTime = LocalDateTime.now();
                 out2.writeObject(new Message(MessageType.SERVER_MESSAGE, "Server", "Hello, welcome to out chat", LocalTime.now(), 6030));
-
+                for (Message msg : messageHistory) {
+                    out2.writeObject(msg);
+                }
 
             } catch (IOException e ) {
                 e.printStackTrace();

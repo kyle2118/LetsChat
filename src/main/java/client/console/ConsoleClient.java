@@ -1,13 +1,16 @@
 package client.console;
 
 import java.io.*;
+import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalTime;
+import java.util.Scanner;
 
 import client.base.ClientBase;
 import client.base.ClientType;
 import message.Message;
 import message.MessageType;
+import res.Const;
 
 public class ConsoleClient extends ClientBase {
     public final ClientType type = ClientType.CONSOLE;
@@ -21,6 +24,21 @@ public class ConsoleClient extends ClientBase {
            Start an inner class which will work independently receiving messages from another participants
            A participant does not receive messages until he/she inputs name
          */
+        System.out.println("Your name: ");
+        keyboard = new Scanner(System.in);
+        setName(keyboard.nextLine());
+        try {
+
+            super.socket = new Socket(Const.ADDRESS, Const.PORT);
+            super.out2 = new ObjectOutputStream(socket.getOutputStream());
+            super.in2 = new ObjectInputStream(socket.getInputStream());
+            out2.writeObject(type);
+            out2.writeObject(new Message(MessageType.ONLINE, name, "online", LocalTime.now(), 1234));
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Receiver receiver = new Receiver();
         receiver.start();
